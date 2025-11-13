@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.14.36603.0 d17.14
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SuperEsperanzaApi", "SuperEsperanzaApi\SuperEsperanzaApi.csproj", "{BDE949EA-3312-449D-946E-C6D91EF9FD15}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{BDE949EA-3312-449D-946E-C6D91EF9FD15}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BDE949EA-3312-449D-946E-C6D91EF9FD15}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BDE949EA-3312-449D-946E-C6D91EF9FD15}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BDE949EA-3312-449D-946E-C6D91EF9FD15}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {2BB14D67-7004-4A29-9D22-19460609BFA0}
+	EndGlobalSection
+EndGlobal
