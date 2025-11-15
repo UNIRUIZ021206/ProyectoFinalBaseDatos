@@ -1,16 +1,27 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.IdentityModel.Tokens;
-using Microsoft.OpenApi.Models;
-using SuperEsperanzaApi;
-using SuperEsperanzaApi.Dao;
-using SuperEsperanzaApi.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi;
+using Microsoft.OpenApi.Models; // <-- ARREGLA ERRORES DE SWAGGER
+using SuperEsperanzaApi; // <-- ARREGLA MappingConfig
+using SuperEsperanzaApi.Dao;
+using SuperEsperanzaApi.Dao.Interfaces; // <-- ARREGLA IRepository
+using SuperEsperanzaApi.Data;
+using SuperEsperanzaApi.Models; // <-- ARREGLA Categoria
+using SuperEsperanzaApi.Services;
+using SuperEsperanzaApi.Services.Interfaces; // <-- ARREGLA IService y CategoriaService
+using System;
+using System.Security.Claims;
+using System.Text;
+using System.Text.Json;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Resolver source-gen (ya generado)
 var resolver = AppJsonSerializerContext.Default;
+
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
     {
@@ -19,7 +30,6 @@ builder.Services.AddControllers()
     });
 
 // Hacer que todos los endpoints de MVC/API requieran autenticación por defecto.
-// Se puede usar [AllowAnonymous] para exponer rutas públicas explícitamente.
 builder.Services.AddAuthorization(options =>
 {
     options.FallbackPolicy = new AuthorizationPolicyBuilder()
@@ -41,6 +51,7 @@ builder.Services.AddAuthentication(options =>
 {
     options.SaveToken = true;
     options.RequireHttpsMetadata = false;
+
     options.TokenValidationParameters = new TokenValidationParameters
     {
         ValidateIssuer = true,
@@ -53,7 +64,7 @@ builder.Services.AddAuthentication(options =>
         ClockSkew = TimeSpan.Zero,
         // Ajuste los Claim types según su token: "role" o ClaimTypes.Role
         NameClaimType = ClaimTypes.NameIdentifier,
-        RoleClaimType = "role"
+        RoleClaimType = "role" // Asegúrate que tu JwtService use "role" o ClaimTypes.Role
     };
 });
 
@@ -70,6 +81,7 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
     c.SwaggerDoc("v1", new OpenApiInfo { Title = "Super Esperanza API", Version = "v1" });
+
     c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
         Description = "Authorization: Bearer {token}",
@@ -79,27 +91,49 @@ builder.Services.AddSwaggerGen(c =>
         Scheme = "bearer",
         BearerFormat = "JWT"
     });
+
+    // --- SINTAXIS CORREGIDA (Arregla CS0117) ---
     c.AddSecurityRequirement(new OpenApiSecurityRequirement
     {
         {
-            new OpenApiSecurityScheme { Reference = new OpenApiReference { Type = ReferenceType.SecurityScheme, Id = "Bearer" } },
+            new OpenApiSecurityScheme
+            {
+                Reference = new OpenApiReference
+                {
+                    Type = ReferenceType.SecurityScheme,
+                    Id = "Bearer"
+                }
+            },
             Array.Empty<string>()
         }
     });
 });
 
-// registros DI de servicios...
+// --- Inyección de Dependencias (DI) ---
 builder.Services.AddScoped<ConexionDB>();
+
+// Servicios de Autenticación
 builder.Services.AddScoped<UsuarioDAO>();
 builder.Services.AddScoped<JwtService>();
 builder.Services.AddScoped<IUsuarioService, UsuarioService>();
+
+// Servicios de Rol
 builder.Services.AddScoped<RolDAO>();
 builder.Services.AddScoped<IRolService, RolService>();
+
+// Servicios de Categoria (Añadidos)
+builder.Services.AddScoped<IRepository<Categoria>, CategoriaDAO>();
+builder.Services.AddScoped<IService<Categoria>, CategoriaService>();
+
+// AutoMapper (Añadido)
+builder.Services.AddAutoMapper(typeof(MappingConfig));
+
 
 builder.Services.AddCors(o => o.AddPolicy("AllowAll", p => p.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader()));
 
 var app = builder.Build();
 
+// --- Pipeline HTTP ---
 app.UseSwagger();
 app.UseSwaggerUI(c =>
 {

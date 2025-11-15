@@ -3,12 +3,13 @@ using Microsoft.AspNetCore.Mvc;
 using SuperEsperanzaApi.Dto;
 using SuperEsperanzaApi.Services;
 using System.Linq;
+using System.Security.Claims; // <-- Asegúrate de tener este 'using'
 
 namespace SuperEsperanzaApi.Controlador
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize]
+    [Authorize] // Protege todo el controlador por defecto
     public class AuthController : ControllerBase
     {
         private readonly IUsuarioService _usuarioService;
@@ -24,8 +25,9 @@ namespace SuperEsperanzaApi.Controlador
             _configuration = configuration;
         }
 
+        // Endpoint de estado de la API
         [HttpGet]
-        [AllowAnonymous]
+        [AllowAnonymous] // Permite esta ruta sin token
         [ProducesResponseType(StatusCodes.Status200OK)]
         public IActionResult Get()
         {
@@ -37,12 +39,13 @@ namespace SuperEsperanzaApi.Controlador
             return Ok(response);
         }
 
+        // Endpoint de Login
         [HttpPost("login")]
-        [AllowAnonymous]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        [AllowAnonymous] // Permite esta ruta sin token
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(LoginResponse))]
+        [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ErrorResponse))]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(MensajeResponse))]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError, Type = typeof(ErrorResponse))]
         public async Task<ActionResult<LoginResponse>> Login([FromBody] LoginRequest request)
         {
             if (request == null)
@@ -59,8 +62,8 @@ namespace SuperEsperanzaApi.Controlador
                     .Where(x => x.Value?.Errors.Count > 0)
                     .SelectMany(x => x.Value!.Errors.Select(e => $"{x.Key}: {e.ErrorMessage}"))
                     .ToList();
-                return BadRequest(new ErrorResponse 
-                { 
+                return BadRequest(new ErrorResponse
+                {
                     Error = "Datos de entrada inválidos: " + string.Join("; ", errores)
                 });
             }
@@ -93,8 +96,8 @@ namespace SuperEsperanzaApi.Controlador
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error inesperado al procesar el inicio de sesión para: {Usuario}. Tipo: {Tipo}, Mensaje: {Mensaje}, StackTrace: {StackTrace}", 
-                    request.NombreUsuario, ex.GetType().Name, ex.Message, ex.StackTrace);
+                _logger.LogError(ex, "Error inesperado al procesar el inicio de sesión para: {Usuario}. Tipo: {Tipo}, Mensaje: {Mensaje}",
+                    request.NombreUsuario, ex.GetType().Name, ex.Message);
                 return StatusCode(StatusCodes.Status500InternalServerError, new ErrorResponse { Error = "Error interno del servidor" });
             }
         }
@@ -114,7 +117,12 @@ namespace SuperEsperanzaApi.Controlador
                 Mensaje = "Autorización funcionando correctamente",
                 Usuario = user,
                 UsuarioId = userId,
-                Rol = role,
+
+                // --- CORRECCIÓN AQUÍ ---
+                // (Arregla CS8601)
+                Rol = role ?? "N/A", // Se asigna "N/A" si el rol es nulo
+                // --- FIN CORRECCIÓN ---
+
                 IsAuthenticated = User.Identity?.IsAuthenticated ?? false
             });
         }

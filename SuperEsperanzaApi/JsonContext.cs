@@ -25,6 +25,9 @@ namespace SuperEsperanzaApi
     [JsonSerializable(typeof(ValidationProblemDetails))]
     [JsonSerializable(typeof(Dictionary<string, string[]>))]
 
+    // ... otros registros ...
+
+    // --- MÓDULO CATEGORIA ---
     [JsonSerializable(typeof(Categoria))]
     [JsonSerializable(typeof(IEnumerable<Categoria>))]
     [JsonSerializable(typeof(List<Categoria>))]

@@ -18,12 +18,13 @@ namespace SuperEsperanzaApi.Services
 
             var claims = new[]
             {
-                // --- INICIO DE MEJORA ---
-                // Añadimos el ID del usuario al token. Será vital para la auditoría.
                 new Claim(ClaimTypes.NameIdentifier, usuario.Id.ToString()),
-                // --- FIN MEJORA ---
-                new Claim(ClaimTypes.Name, usuario.NombreUsuario),
-                new Claim(ClaimTypes.Role, usuario.Rol),
+                
+                // --- CORRECCIÓN AQUÍ ---
+                // Se añade '?? string.Empty' para eliminar la advertencia CS8604
+                new Claim(ClaimTypes.Name, usuario.NombreUsuario ?? string.Empty),
+                new Claim(ClaimTypes.Role, usuario.Rol ?? string.Empty),
+                // --- FIN CORRECCIÓN ---
             };
 
             var token = new JwtSecurityToken(
@@ -38,4 +39,3 @@ namespace SuperEsperanzaApi.Services
         }
     }
 }
-
