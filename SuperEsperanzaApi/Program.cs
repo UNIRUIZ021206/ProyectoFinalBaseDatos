@@ -1,13 +1,7 @@
-using System;
-using System.Text;
-using System.Text.Json;
-using System.Security.Claims;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using SuperEsperanzaApi;
-using SuperEsperanzaApi.Data;
 using SuperEsperanzaApi.Dao;
 using SuperEsperanzaApi.Services;
 using Microsoft.AspNetCore.Builder;
@@ -17,7 +11,6 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Resolver source-gen (ya generado)
 var resolver = AppJsonSerializerContext.Default;
-
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
     {
@@ -48,7 +41,6 @@ builder.Services.AddAuthentication(options =>
 {
     options.SaveToken = true;
     options.RequireHttpsMetadata = false;
-
     options.TokenValidationParameters = new TokenValidationParameters
     {
         ValidateIssuer = true,
@@ -78,7 +70,6 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
     c.SwaggerDoc("v1", new OpenApiInfo { Title = "Super Esperanza API", Version = "v1" });
-
     c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
         Description = "Authorization: Bearer {token}",
@@ -119,7 +110,6 @@ app.UseSwaggerUI(c =>
 app.UseHttpsRedirection();
 app.UseCors("AllowAll");
 
-// ORDER IS CRITICAL: authentication antes que authorization
 app.UseAuthentication();
 app.UseAuthorization();
 
